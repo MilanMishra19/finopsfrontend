@@ -30,16 +30,14 @@ interface Transaction {
 const fetcher = async (url: string) => {
   const res = await fetch(url, {
     credentials: 'include',
-    headers: {
-      Accept: 'application/json',
-    },
+    headers: { Accept: 'application/json' },
     cache: 'no-store',
   });
 
   if (!res.ok) {
     const contentType = res.headers.get('content-type');
-    if (contentType && contentType.includes('text/html')) {
-      throw new Error('HTML returned instead of JSON. Backend may be redirecting or misconfigured.');
+    if (contentType?.includes('text/html')) {
+      throw new Error('HTML returned instead of JSON. Backend may be redirecting.');
     }
     if (res.status === 404) return null;
     throw new Error(`Failed to fetch: ${url}`);
@@ -48,21 +46,15 @@ const fetcher = async (url: string) => {
   return res.json();
 };
 
-// ✅ Correct inline typing for params — DO NOT use `type PageProps = { ... }`
-export default async function AccountDetailsPage({
-  params,
-}: {
-  params: { id: string };
-}) {
+export default async function Page({ params }: { params: { id: string } }) {
   const accountId = params.id;
 
   if (!accountId) notFound();
 
-  const [accountDetails, fraudTransactions]: [AccountDetails | null, Transaction[]] =
-    await Promise.all([
-      fetcher(`${BACKEND_URL}/api/accounts/${accountId}`),
-      fetcher(`${BACKEND_URL}/api/transactions/fraud/${accountId}`),
-    ]);
+  const [accountDetails, fraudTransactions]: [AccountDetails | null, Transaction[]] = await Promise.all([
+    fetcher(`${BACKEND_URL}/api/accounts/${accountId}`),
+    fetcher(`${BACKEND_URL}/api/transactions/fraud/${accountId}`),
+  ]);
 
   if (!accountDetails) notFound();
 
@@ -92,7 +84,7 @@ export default async function AccountDetailsPage({
           </div>
         </div>
 
-        {/* Overview Details */}
+        {/* Overview Grid */}
         <div className="flex flex-row items-center justify-between gap-5 border-b-2 border-white">
           {[
             { label: 'Date of Birth', value: accountDetails.dob },
@@ -109,7 +101,7 @@ export default async function AccountDetailsPage({
           ))}
         </div>
 
-        {/* Fraud Insights */}
+        {/* Insights */}
         <div className="flex flex-row justify-between px-4 py-2 bg-black text-white rounded shadow">
           <div>
             <h2 className="font-bold tracking-wider text-sm uppercase">Avg Fraud Expenditure</h2>
@@ -131,9 +123,7 @@ export default async function AccountDetailsPage({
             FRAUD TRANSACTIONS FOR <span className="font-bold">{accountDetails.name}</span>
           </h1>
           <Link href="/dashboard/accounts">
-            <h1 className="text-blue-500 tracking-widest text-sm">
-              Back to accounts Overview <span className="text-xl">&#8599;</span>
-            </h1>
+            <h1 className="text-blue-500 tracking-widest text-sm">Back to Accounts Overview <span className="text-xl">&#8599;</span></h1>
           </Link>
         </div>
 
@@ -141,7 +131,7 @@ export default async function AccountDetailsPage({
         <table className="min-w-full divide-y divide-gray-200 rounded">
           <thead>
             <tr className="bg-black">
-              {['Time', 'Amount', 'Location', 'Device Id', 'Method', 'Fraud', 'Flagged'].map((header) => (
+              {["Time", "Amount", "Location", "Device Id", "Method", "Fraud", "Flagged"].map((header) => (
                 <th key={header} className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                   {header}
                 </th>
@@ -158,9 +148,7 @@ export default async function AccountDetailsPage({
             ) : (
               fraudTransactions.map((t) => (
                 <tr key={t.txnId} className="hover:bg-gray-500">
-                  <td className="px-6 py-4 text-sm text-white/40 whitespace-nowrap">
-                    {new Date(t.timeStamp).toLocaleString()}
-                  </td>
+                  <td className="px-6 py-4 text-sm text-white/40 whitespace-nowrap">{new Date(t.timeStamp).toLocaleString()}</td>
                   <td className="px-6 py-4 text-sm text-white/90 whitespace-nowrap">₹{t.amount.toLocaleString("en-IN")}</td>
                   <td className="px-6 py-4 text-sm text-white whitespace-nowrap">{t.location}</td>
                   <td className="px-6 py-4 text-sm text-white whitespace-nowrap">{t.deviceId}</td>
