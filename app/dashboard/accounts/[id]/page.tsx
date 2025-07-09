@@ -1,9 +1,9 @@
-
-
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
+
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL;
+
 interface AccountDetails {
   accountId: string;
   accountNumber: string;
@@ -27,11 +27,17 @@ interface Transaction {
   isFlagged: string;
 }
 
+type PageProps = {
+  params: {
+    id: string;
+  };
+};
+
 const fetcher = async (url: string) => {
   const res = await fetch(url, {
     credentials: 'include',
     headers: {
-      'Accept': 'application/json',
+      Accept: 'application/json',
     },
     cache: 'no-store',
   });
@@ -48,12 +54,7 @@ const fetcher = async (url: string) => {
   return res.json();
 };
 
-// --- Page Component ---
-export default async function AccountDetailsPage({
-  params,
-}: {
-  params: { id: string };
-}) {
+export default async function AccountDetailsPage({ params }: PageProps) {
   const accountId = params.id;
 
   if (!accountId) notFound();
@@ -65,11 +66,15 @@ export default async function AccountDetailsPage({
 
   if (!accountDetails) notFound();
 
+  const totalFraudAmount = fraudTransactions.reduce((sum, txn) => sum + txn.amount, 0);
+  const avgFraudAmount = fraudTransactions.length > 0 ? (totalFraudAmount / fraudTransactions.length) : 0;
+  const maxFraudTxn = Math.max(...fraudTransactions.map((t) => t.amount), 0);
+
   return (
     <div className="relative max-h-8xl w-full rounded pb-3 px-4">
       <div className="flex flex-col bg-white/60 justify-between gap-3">
 
-        {/* Header with profile info */}
+        {/* Header */}
         <div className="flex flex-row items-center gap-20">
           <div className="p-2">
             <div className="bg-white rounded flex flex-col gap-0.5 items-center p-2">
@@ -78,7 +83,6 @@ export default async function AccountDetailsPage({
               <span className="text-xs font-bold text-black/50 tracking-widest">{accountDetails.accountId}</span>
             </div>
           </div>
-
           <div className="p-2">
             <h1 className="text-md font-bold tracking-widest uppercase">Account Holder Name</h1>
             <span className="text-md font-light tracking-widest uppercase">{accountDetails.name}</span>
@@ -89,15 +93,14 @@ export default async function AccountDetailsPage({
           </div>
         </div>
 
-        {/* Details Grid */}
+        {/* Overview Details */}
         <div className="flex flex-row items-center justify-between gap-5 border-b-2 border-white">
-          {[
-            { label: 'Date of Birth', value: accountDetails.dob },
+          {[{ label: 'Date of Birth', value: accountDetails.dob },
             { label: 'City', value: accountDetails.city },
             { label: 'KYC Status', value: accountDetails.kycStatus },
             { label: 'Risk Score', value: accountDetails.riskScore },
             { label: 'Total Txns', value: accountDetails.totalTxns },
-            { label: 'Fraud Txns', value: accountDetails.fraudTxns },
+            { label: 'Fraud Txns', value: accountDetails.fraudTxns }
           ].map(({ label, value }) => (
             <div key={label} className="p-2 border border-black">
               <h1 className="text-md font-bold tracking-widest uppercase">{label}</h1>
@@ -105,29 +108,24 @@ export default async function AccountDetailsPage({
             </div>
           ))}
         </div>
-         {/* Insight block */}
-<div className="flex flex-row justify-between px-4 py-2 bg-black text-white rounded shadow">
-  <div>
-    <h2 className="font-bold tracking-wider text-sm uppercase">Avg Fraud Expenditure</h2>
-    <p className="text-lg font-semibold">
-      ₹{(fraudTransactions.reduce((sum, txn) => sum + txn.amount, 0) / fraudTransactions.length || 0).toFixed(2)}
-    </p>
-  </div>
-  <div>
-    <h2 className="font-bold tracking-wider text-sm uppercase">Total Fraud Txn Amount</h2>
-    <p className="text-lg font-semibold">
-      ₹{fraudTransactions.reduce((sum, txn) => sum + txn.amount, 0).toLocaleString("en-IN")}
-    </p>
-  </div>
-  <div>
-    <h2 className="font-bold tracking-wider text-sm uppercase">Highest Fraud Txn</h2>
-    <p className="text-lg font-semibold">
-      ₹{Math.max(...fraudTransactions.map(t => t.amount), 0).toLocaleString("en-IN")}
-    </p>
-  </div>
-</div>
 
-        {/* Table */}
+        {/* Fraud Insights */}
+        <div className="flex flex-row justify-between px-4 py-2 bg-black text-white rounded shadow">
+          <div>
+            <h2 className="font-bold tracking-wider text-sm uppercase">Avg Fraud Expenditure</h2>
+            <p className="text-lg font-semibold">₹{avgFraudAmount.toFixed(2)}</p>
+          </div>
+          <div>
+            <h2 className="font-bold tracking-wider text-sm uppercase">Total Fraud Txn Amount</h2>
+            <p className="text-lg font-semibold">₹{totalFraudAmount.toLocaleString("en-IN")}</p>
+          </div>
+          <div>
+            <h2 className="font-bold tracking-wider text-sm uppercase">Highest Fraud Txn</h2>
+            <p className="text-lg font-semibold">₹{maxFraudTxn.toLocaleString("en-IN")}</p>
+          </div>
+        </div>
+
+        {/* Table Header */}
         <div className="flex flex-row px-4 justify-between p-2 bg-black">
           <h1 className="text-white tracking-widest">FRAUD TRANSACTIONS FOR <span className="font-bold">{accountDetails.name}</span></h1>
           <Link href="/dashboard/accounts">
@@ -135,11 +133,14 @@ export default async function AccountDetailsPage({
           </Link>
         </div>
 
+        {/* Table Content */}
         <table className="min-w-full divide-y divide-gray-200 rounded">
           <thead>
             <tr className="bg-black">
               {["Time", "Amount", "Location", "Device Id", "Method", "Fraud", "Flagged"].map((header) => (
-                <th key={header} className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">{header}</th>
+                <th key={header} className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                  {header}
+                </th>
               ))}
             </tr>
           </thead>
@@ -160,14 +161,14 @@ export default async function AccountDetailsPage({
                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                       t.isFraud === 'true' ? 'bg-red-100 text-red-500' : 'bg-green-100 text-green-500'
                     }`}>
-                      {t.isFraud === 'true' ? 'Fraud' : 'Fraudulent'}
+                      {t.isFraud === 'true' ? 'Fraud' : 'Legit'}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-sm whitespace-nowrap">
                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                       t.isFlagged === 'true' ? 'bg-red-100 text-red-500' : 'bg-green-100 text-green-500'
                     }`}>
-                      {t.isFlagged === 'true' ? 'Flagged' : 'True'}
+                      {t.isFlagged === 'true' ? 'Flagged' : 'Clear'}
                     </span>
                   </td>
                 </tr>
