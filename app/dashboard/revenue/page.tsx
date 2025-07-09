@@ -1,7 +1,7 @@
 "use client";
 
-import RevenueCard from "@/app/ui/dashboard/statcard/RevenueCard";
 import { useEffect, useState } from "react";
+import RevenueCard from "@/app/ui/dashboard/statcard/RevenueCard";
 import {
   XAxis,
   YAxis,
@@ -16,12 +16,32 @@ import {
   Pie,
   Cell,
 } from "recharts";
+
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL;
+
+// Type definitions
+type RevenueDataPoint = {
+  date: string;
+  revenue: number;
+  fraudLoss: number;
+};
+
+type AlertStatus = {
+  status: string;
+  count: number;
+};
+
+type FraudLocation = {
+  location: string;
+  name: string;
+  fraudLoss: number;
+};
+
 export default function Revenue() {
   const [rev, setRev] = useState<{
-    data: any[] | null;
-    statData: any[] | null;
-    frdData: any[] | null;
+    data: RevenueDataPoint[] | null;
+    statData: AlertStatus[] | null;
+    frdData: FraudLocation[] | null;
   }>({
     data: null,
     statData: null,
@@ -29,30 +49,34 @@ export default function Revenue() {
   });
 
   const [loading, setLoading] = useState(true);
-
-  const COLORS = ['#6200ee', '#3700b3', '#03dac6', '#018786'];
+  const COLORS = ["#6200ee", "#3700b3", "#03dac6", "#018786"];
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
         const [res, statRes, frdRes] = await Promise.all([
-          fetch(`${BACKEND_URL}/api/transactions/revenue-fraud`, { credentials: "include" }),
-          fetch(`${BACKEND_URL}/api/alerts/status-distribution`, { credentials: "include" }),
-          fetch(`${BACKEND_URL}/api/transactions/fraud-city`, { credentials: "include" }),
+          fetch(`${BACKEND_URL}/api/transactions/revenue-fraud`, {
+            credentials: "include",
+          }),
+          fetch(`${BACKEND_URL}/api/alerts/status-distribution`, {
+            credentials: "include",
+          }),
+          fetch(`${BACKEND_URL}/api/transactions/fraud-city`, {
+            credentials: "include",
+          }),
         ]);
 
-        const data = await res.json();
-        const statData = await statRes.json();
-        const frdData = await frdRes.json();
+        const data: RevenueDataPoint[] = await res.json();
+        const statData: AlertStatus[] = await statRes.json();
+        const frdRaw: Omit<FraudLocation, "name">[] = await frdRes.json();
 
-        // Ensure 'name' key exists for location
-        const processedFrdData = (frdData || []).map((item: any) => ({
+        const frdData: FraudLocation[] = frdRaw.map((item) => ({
           ...item,
           name: item.location,
         }));
 
-        setRev({ data, statData, frdData: processedFrdData });
+        setRev({ data, statData, frdData });
       } catch (err) {
         console.error("Error fetching revenue data:", err);
       } finally {
@@ -100,12 +124,22 @@ export default function Revenue() {
                   <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <XAxis dataKey="date" stroke="#ccc" fontSize={10}/>
-              <YAxis stroke="#ccc" fontSize={10}/>
+              <XAxis dataKey="date" stroke="#ccc" fontSize={10} />
+              <YAxis stroke="#ccc" fontSize={10} />
               <Tooltip />
               <Legend />
-              <Area type="monotone" dataKey="revenue" stroke="#03dac6" fill="url(#revenue)" />
-              <Area type="monotone" dataKey="fraudLoss" stroke="#ef4444" fill="url(#fraudLoss)" />
+              <Area
+                type="monotone"
+                dataKey="revenue"
+                stroke="#03dac6"
+                fill="url(#revenue)"
+              />
+              <Area
+                type="monotone"
+                dataKey="fraudLoss"
+                stroke="#ef4444"
+                fill="url(#fraudLoss)"
+              />
             </AreaChart>
           </ResponsiveContainer>
         </div>
@@ -130,7 +164,10 @@ export default function Revenue() {
                 label
               >
                 {(rev.statData || []).map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={COLORS[index % COLORS.length]}
+                  />
                 ))}
               </Pie>
             </PieChart>
@@ -144,14 +181,16 @@ export default function Revenue() {
           </h1>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={rev.frdData || []}>
-              <XAxis dataKey="name" 
-              fontSize={8} 
-  stroke="#ccc"
-  interval={0} 
-  angle={-45} 
-  textAnchor="end" 
-  height={70} />
-              <YAxis stroke="#ccc" fontSize={8}/>
+              <XAxis
+                dataKey="name"
+                fontSize={8}
+                stroke="#ccc"
+                interval={0}
+                angle={-45}
+                textAnchor="end"
+                height={70}
+              />
+              <YAxis stroke="#ccc" fontSize={8} />
               <Tooltip
                 formatter={(value: number) => `₹${(value / 100000).toFixed(2)}L`}
               />

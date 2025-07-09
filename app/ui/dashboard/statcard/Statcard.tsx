@@ -32,7 +32,7 @@ export default function StatCards(){
         <>
         <Cards
          title="Total transactions processed"
-         value={stats.totalTransactions}/>
+         value={(stats.totalTransactions).toLocaleString()}/>
          <Cards
          title="Estimated fraud value prevented"
          value={`₹ ${(stats.resolved / 100000).toLocaleString("en-IN", { maximumFractionDigits: 2 })}L`}/>

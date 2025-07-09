@@ -108,12 +108,17 @@ export default function Account() {
             : alert
         )
       );
-    } catch (err: any) {
-      setUpdateStatusMessage(`Error: ${err.message}`);
-      console.error("Update error:", err);
-    } finally {
-      setUpdatingAlertId(null);
-    }
+    } catch (err) {
+  if (err instanceof Error) {
+    setUpdateStatusMessage(`Error: ${err.message}`);
+    console.error("Update error:", err);
+  } else {
+    setUpdateStatusMessage("An unexpected error occurred.");
+    console.error("Unknown error:", err);
+  }
+} finally {
+  setUpdatingAlertId(null);
+}
   };
 
   return (

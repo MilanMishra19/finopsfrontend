@@ -1,10 +1,28 @@
 'use client';
 import { useEffect, useState } from 'react';
+
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL;
+
+type Alert = {
+  alertId: string;
+  severity: "LOW" | "MEDIUM" | "CRITICAL";
+  status: string;
+  reason: string;
+  amount: number;
+  name: string;
+  createdAt: string;
+};
+
+type Analyst = {
+  id: string;
+  name: string;
+  email: string;
+};
+
 export default function AnalystProfile() {
-  const [alerts, setAlerts] = useState<any[]>([]);
+  const [alerts, setAlerts] = useState<Alert[]>([]);
   const [loading, setLoading] = useState(false);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<Analyst | null>(null);
 
   useEffect(() => {
     const fetchResolvedAlerts = async () => {
@@ -14,7 +32,7 @@ export default function AnalystProfile() {
       });
 
       if (res.ok) {
-        const data = await res.json();
+        const data: Alert[] = await res.json();
         setAlerts(data);
       } else {
         console.error("Failed to fetch resolved alerts");
@@ -32,7 +50,7 @@ export default function AnalystProfile() {
       });
 
       if (userRes.ok) {
-        const userData = await userRes.json();
+        const userData: Analyst = await userRes.json();
         console.log("User API response:", userData);
         setUser(userData);
       } else {
@@ -46,7 +64,7 @@ export default function AnalystProfile() {
     return (
       <div className="flex items-center justify-center h-screen gap-5 text-white">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
-        <span className='text-sm tracking-widest'>Fetching stats…</span>
+        <span className="text-sm tracking-widest">Fetching stats…</span>
       </div>
     );
   }
@@ -87,7 +105,17 @@ export default function AnalystProfile() {
                   key={alert.alertId}
                   className="border-b border-gray-700 hover:bg-[#222222] transition duration-200"
                 >
-                  <td className={`px-6 py-4 ${alert.severity==='CRITICAL'?'text-red-500':alert.severity==='MEDIUM'?'text-yellow-500':'text-green-500'}`}>{alert.severity}</td>
+                  <td
+                    className={`px-6 py-4 ${
+                      alert.severity === 'CRITICAL'
+                        ? 'text-red-500'
+                        : alert.severity === 'MEDIUM'
+                        ? 'text-yellow-500'
+                        : 'text-green-500'
+                    }`}
+                  >
+                    {alert.severity}
+                  </td>
                   <td className="px-6 py-4">{alert.status}</td>
                   <td className="px-6 py-4">{alert.reason}</td>
                   <td className="px-6 py-4">₹{alert.amount.toLocaleString("en-IN")}</td>

@@ -6,7 +6,7 @@ import { useTransition } from "react";
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL;
 export default function Sidebar() {
     const router = useRouter();
-    const [isPending,startTransition] = useTransition();
+    const [,startTransition] = useTransition();
     const handleLogOut = async () => {
         try{
             const res = await fetch(`${BACKEND_URL}/logout`,{

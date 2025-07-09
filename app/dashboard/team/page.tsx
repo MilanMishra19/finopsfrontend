@@ -54,7 +54,7 @@ export default function AnalystTable() {
             </tr>
           </thead>
           <tbody className="bg-[#181818]">
-            {analysts.map((analyst, idx) => (
+            {analysts.map((analyst) => (
               <tr
                 key={analyst.analystId}
                 className="border-b border-gray-700 hover:bg-[#222222] transition duration-200"
