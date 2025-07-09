@@ -40,6 +40,7 @@ export default function Dashboard() {
         }
       } catch (error) {
         setAuthorized(false);
+        console.log("Error fetching stats:", error);
         alert("You are not authorized to view this page. Please log in.");
         router.push("/login");
       }

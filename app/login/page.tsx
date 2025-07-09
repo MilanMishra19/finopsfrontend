@@ -12,7 +12,7 @@ export default function Login() {
   const [message, setMessage] = useState('');
   const router = useRouter();
   
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e:React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setMessage('');
     try {
