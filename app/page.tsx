@@ -15,7 +15,7 @@ export default function Register() {
     const [password,setPassword] = useState('');
     const [confirmPassword,setConfirmPassword] = useState('');
     const [message, setMessage] = useState('');
-    const handleSubmit = async (e) => {
+    const handleSubmit = async (e:React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setMessage('');
         if (password !== confirmPassword) {
@@ -50,10 +50,15 @@ export default function Register() {
                 setMessage(`Registration failed: ${data.message || 'An unexpected error occurred'}`);
                 console.error('Backend error:', data);
             } 
-        } catch (error) {
-            setMessage('Registration failed: ' + error.message || 'An unexpected error occurred');
-            console.error('Registration error:', error);
-        } 
+        } catch (error: unknown) {
+  if (error instanceof Error) {
+    setMessage('Registration failed: ' + error.message);
+    console.error('Registration error:', error);
+  } else {
+    setMessage('An unknown error occurred.');
+    console.error('Unknown error:', error);
+  }
+}
     }
   return (
     <div className="flex max-h-screen items-center justify-center p-6 sm:p-12 relative">

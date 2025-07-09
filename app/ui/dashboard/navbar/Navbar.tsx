@@ -3,12 +3,12 @@
 import Image from "next/image";
 import Link from "next/link";
 import React, { useEffect, useState } from 'react';
-
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL;
 export default function Navbar() {
-    const [stats,setStats] = useState('');
+    const [stats,setStats] = useState<{ name?: string }>({});
     useEffect(()=>{
         const fetchStats = async () => {
-                const response = await fetch("http://localhost:8080/api/analysts/me",{credentials:'include'});
+                const response = await fetch(`${BACKEND_URL}/api/analysts/me`,{credentials:'include'});
                 if(response.ok) {
                     const data = await response.json();
                     setStats(data);
