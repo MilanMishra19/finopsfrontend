@@ -65,7 +65,6 @@ export default async function Page({ params }: { params: { id: string } }) {
   return (
     <div className="relative max-h-8xl w-full rounded pb-3 px-4">
       <div className="flex flex-col bg-white/60 justify-between gap-3">
-        {/* Header */}
         <div className="flex flex-row items-center gap-20">
           <div className="p-2">
             <div className="bg-white rounded flex flex-col gap-0.5 items-center p-2">
@@ -84,7 +83,6 @@ export default async function Page({ params }: { params: { id: string } }) {
           </div>
         </div>
 
-        {/* Overview Grid */}
         <div className="flex flex-row items-center justify-between gap-5 border-b-2 border-white">
           {[
             { label: 'Date of Birth', value: accountDetails.dob },
@@ -101,7 +99,6 @@ export default async function Page({ params }: { params: { id: string } }) {
           ))}
         </div>
 
-        {/* Insights */}
         <div className="flex flex-row justify-between px-4 py-2 bg-black text-white rounded shadow">
           <div>
             <h2 className="font-bold tracking-wider text-sm uppercase">Avg Fraud Expenditure</h2>
@@ -117,7 +114,6 @@ export default async function Page({ params }: { params: { id: string } }) {
           </div>
         </div>
 
-        {/* Table Header */}
         <div className="flex flex-row px-4 justify-between p-2 bg-black">
           <h1 className="text-white tracking-widest">
             FRAUD TRANSACTIONS FOR <span className="font-bold">{accountDetails.name}</span>
@@ -127,7 +123,6 @@ export default async function Page({ params }: { params: { id: string } }) {
           </Link>
         </div>
 
-        {/* Table Content */}
         <table className="min-w-full divide-y divide-gray-200 rounded">
           <thead>
             <tr className="bg-black">
