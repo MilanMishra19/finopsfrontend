@@ -61,7 +61,7 @@ export default function Login() {
           console.error('Backend response text:', text);
       }
     } catch (error) {
-      setMessage('Login failed: ' + error.message || 'An unexpected error occurred');
+      setMessage('Login failed: ' + error || 'An unexpected error occurred');
       console.error('Login error:', error);
     }
   };

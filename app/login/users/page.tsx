@@ -6,10 +6,28 @@ import React from "react";
 import { motion } from "framer-motion";
 import { TextHoverEffect } from "@/app/ui/TextAnimate";
 import Image from "next/image";
+
+// ✅ Type Definitions
+type Account = {
+  accountId: string;
+  name?: string;
+};
+
+type FormDataType = {
+  accountId: string;
+  amount: string;
+  method: string;
+  location: string;
+  deviceId: string;
+  isFraud: boolean;
+  status: string;
+};
+
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL;
+
 export default function Users() {
-  const [accounts, setAccounts] = useState([]);
-  const [formData, setFormData] = useState({
+  const [accounts, setAccounts] = useState<Account[]>([]);
+  const [formData, setFormData] = useState<FormDataType>({
     accountId: "",
     amount: "",
     method: "",
@@ -18,6 +36,8 @@ export default function Users() {
     isFraud: false,
     status: "SUCCESS",
   });
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
     fetch(`${BACKEND_URL}/api/accounts`, {
@@ -30,6 +50,8 @@ export default function Users() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
+    setMessage("");
 
     try {
       const response = await fetch(`${BACKEND_URL}/api/transactions`, {
@@ -40,7 +62,7 @@ export default function Users() {
       });
 
       if (response.ok) {
-        alert(`Transaction created successfully for account ${formData.accountId} with status ${formData.status}`);
+        setMessage(`✅ Transaction created for account ${formData.accountId}`);
         setFormData({
           accountId: "",
           amount: "",
@@ -48,21 +70,23 @@ export default function Users() {
           location: "",
           deviceId: "",
           isFraud: false,
-          status:"SUCCESS",
+          status: "SUCCESS",
         });
       } else {
-        alert("Failed to create transaction. Please try again.");
+        setMessage(" Failed to create transaction. Please try again.");
       }
     } catch (error) {
       console.error("Error submitting transaction:", error);
-      alert("An unexpected error occurred.");
+      setMessage(" An unexpected error occurred.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="flex max-h-screen items-center justify-center p-6 sm:p-12 relative">
+    <div className="flex min-h-screen items-center justify-center p-6 sm:p-12 bg-[#121212]">
       <motion.div
-        className="form-container relative flex w-full max-w-2xl flex-col items-center justify-center rounded-2xl bg-white/5 p-8 shadow-2xl backdrop-blur-lg backdrop-filter sm:p-12"
+        className="form-container relative flex w-full max-w-2xl flex-col items-center justify-center rounded-2xl bg-white/5 p-8 shadow-2xl backdrop-blur-lg sm:p-12"
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.5, duration: 1, ease: "easeOut" }}
@@ -72,7 +96,6 @@ export default function Users() {
           style={{
             background: 'radial-gradient(circle at 50% 50%, #39FF14 0%, transparent 70%)',
             filter: 'blur(100px) opacity(0.4)',
-            transition: 'transform 0.5s ease-in-out',
             transform: 'scale(1.2)',
           }}
         ></div>
@@ -83,17 +106,21 @@ export default function Users() {
             <TextHoverEffect text="FinOps" />
           </div>
 
+          {message && (
+            <div className="text-white text-center font-medium">{message}</div>
+          )}
+
           <form className="flex w-full flex-col items-center gap-6" onSubmit={handleSubmit}>
             {/* Account Dropdown */}
             <select
-              className="w-full rounded-lg border-b-2 border-white bg-transparent py-4 text-sm text-black placeholder-white"
+              className="w-full rounded-lg border-b-2 border-white bg-transparent py-4 text-sm text-white placeholder-white/70"
               required
               value={formData.accountId}
               onChange={(e) => setFormData({ ...formData, accountId: e.target.value })}
             >
               <option value="">Select Account</option>
-              {accounts.map((acc: any) => (
-                <option key={acc.accountId} value={acc.accountId}>
+              {accounts.map((acc) => (
+                <option key={acc.accountId} value={acc.accountId} className="text-black">
                   {acc.accountId}
                 </option>
               ))}
@@ -101,7 +128,7 @@ export default function Users() {
 
             {/* Amount */}
             <input
-              className="w-full rounded-lg border-b-2 border-white bg-transparent py-4 text-sm text-white placeholder-white/80 focus:border-white focus:outline-none focus:ring-1 focus:ring-white/80"
+              className="w-full rounded-lg border-b-2 border-white bg-transparent py-4 text-sm text-white placeholder-white/80"
               type="number"
               required
               placeholder="Amount"
@@ -111,7 +138,7 @@ export default function Users() {
 
             {/* Method */}
             <input
-              className="w-full rounded-lg border-b-2 border-white bg-transparent py-4 text-sm text-white placeholder-white/80 focus:border-white focus:outline-none focus:ring-1 focus:ring-white/80"
+              className="w-full rounded-lg border-b-2 border-white bg-transparent py-4 text-sm text-white placeholder-white/80"
               type="text"
               required
               placeholder="Payment Method (e.g. UPI, Card)"
@@ -121,7 +148,7 @@ export default function Users() {
 
             {/* Location */}
             <input
-              className="w-full rounded-lg border-b-2 border-white bg-transparent py-4 text-sm text-white placeholder-white/80 focus:border-white focus:outline-none focus:ring-1 focus:ring-white/80"
+              className="w-full rounded-lg border-b-2 border-white bg-transparent py-4 text-sm text-white placeholder-white/80"
               type="text"
               required
               placeholder="Location"
@@ -131,7 +158,7 @@ export default function Users() {
 
             {/* Device ID */}
             <input
-              className="w-full rounded-lg border-b-2 border-white bg-transparent py-4 text-sm text-white placeholder-white/80 focus:border-white focus:outline-none focus:ring-1 focus:ring-white/80"
+              className="w-full rounded-lg border-b-2 border-white bg-transparent py-4 text-sm text-white placeholder-white/80"
               type="text"
               required
               placeholder="Device ID"
@@ -142,13 +169,14 @@ export default function Users() {
             {/* Submit Button */}
             <button
               type="submit"
-              className="mt-4 w-full rounded-full bg-white/90 py-4 font-bold uppercase tracking-widest text-black shadow-lg transition-all duration-300 hover:bg-white hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2"
+              disabled={loading}
+              className="mt-4 w-full rounded-full bg-white/90 py-4 font-bold uppercase tracking-widest text-black shadow-lg transition-all duration-300 hover:bg-white focus:outline-none"
             >
-              Submit Transaction
+              {loading ? "Submitting..." : "Submit Transaction"}
             </button>
 
             <Link href="/login">
-              <h3 className="text-sm text-blue-300 tracking-widest">Analyst?</h3>
+              <h3 className="text-sm text-blue-300 tracking-widest hover:underline">Analyst?</h3>
             </Link>
           </form>
         </div>
